@@ -1,0 +1,23 @@
+ Specify the remote computer name or IP address
+$computerName = "RemoteComputerName"  # Replace with the actual computer name or IP address
+
+# Get the credentials for the remote session
+$credential = Get-Credential
+
+# Execute the update process on the remote machine
+Invoke-Command -ComputerName $computerName -Credential $credential -ScriptBlock {
+    # Log the start time
+    write-output "$(Get-Date -format 'dd-MMM-yyyy HH:mm'), Start patching, $($env:computername)"
+    
+    # Import the PSWindowsUpdate module
+    if (-not (Get-Module -Name PSWindowsUpdate -ListAvailable)) {
+        Install-Module -Name PSWindowsUpdate -Force -SkipPublisherCheck
+    }
+    Import-Module PSWindowsUpdate
+    
+    # Install all available Windows updates
+    Get-WindowsUpdate -AcceptAll -Install
+    
+    # Log the finish time
+    write-output "$(Get-Date -format 'dd-MMM-yyyy HH:mm'), Finished patching, $($env:computername)"
+} -ErrorAction Stop | Out-File -FilePath "C:\path\to\patching-log.txt" -Append
